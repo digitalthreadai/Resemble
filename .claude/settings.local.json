@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(plan-eng-review)",
+      "Skill(plan-eng-review:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(rm -rf /tmp/metro-*)",
+      "Bash(rm -rf \"$LOCALAPPDATA/Temp/metro-*\")",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/manba/AppData/Local/Temp/claude/C--Apps-claude-resemble/38cfa33c-8ec2-4db0-bf20-fe52032c24aa/tasks/**)",
+      "Bash(done)",
+      "Bash(curl -sI \"https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js\")",
+      "Bash(npx expo:*)",
+      "Bash(grep -rl from.*theme'' app/ src/components/)",
+      "Bash(npm list:*)",
+      "Bash(git remote:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "resemble-web",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["node_modules/expo/bin/cli", "start", "--web", "--port", "4003"],
+      "port": 4003
+    }
+  ]
+}

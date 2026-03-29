@@ -1,30 +1,69 @@
 {
   "expo": {
-    "name": "resemble",
+    "name": "Resemble",
     "slug": "resemble",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
+    "scheme": "resemble",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0a0a1a"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "ai.digitalthread.resemble",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Resemble needs camera access to scan your face for comparison",
+        "NSPhotoLibraryUsageDescription": "Resemble needs photo access to load face photos for comparison"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0a0a1a",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "package": "ai.digitalthread.resemble",
+      "permissions": [
+        "CAMERA"
+      ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Resemble needs camera access to scan your face"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Resemble needs photo access to load face photos"
+        }
+      ],
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Resemble needs camera access to scan your face for comparison"
+        }
+      ],
+      "expo-sharing",
+      [
+        "react-native-fast-tflite",
+        {
+          "enableCoreMLDelegate": true,
+          "enableAndroidGpuDelegate": true
+        }
+      ]
+    ]
   }
 }
