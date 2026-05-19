@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resemble - Strategy &amp; Features</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0A0F;--surface:#12121A;--surface-hover:#1E1E2E;
+  --terminal-bg:#1A1A2E;--terminal-border:#2A2A3E;
+  --text:#E8E8ED;--muted:#8888A0;--muted-fg:#6E6E88;
+  --primary:#7c3aed;--primary-light:#c4b5fd;--secondary:#a855f7;
+  --green:#4ADE80;--blue:#60A5FA;--purple:#A78BFA;--red:#F87171;
+  --sidebar-w:260px;
+}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+code,pre,.mono{font-family:'JetBrains Mono',monospace}
+
+/* ── Sidebar ─────────────────────────────────── */
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);
+  background:var(--surface);border-right:1px solid var(--terminal-border);
+  display:flex;flex-direction:column;z-index:100;
+  transition:transform .3s ease;
+}
+.sidebar-logo{padding:28px 24px 20px;border-bottom:1px solid var(--terminal-border)}
+.sidebar-logo h1{font-size:1.35rem;font-weight:800;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.02em}
+.sidebar-logo span{display:block;font-size:.72rem;color:var(--muted);margin-top:2px;letter-spacing:.05em;text-transform:uppercase}
+.sidebar-nav{flex:1;overflow-y:auto;padding:16px 0}
+.sidebar-nav a{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 24px;font-size:.85rem;color:var(--muted);
+  text-decoration:none;transition:all .15s ease;border-left:3px solid transparent;
+}
+.sidebar-nav a:hover{color:var(--text);background:var(--surface-hover)}
+.sidebar-nav a.active{color:var(--primary-light);border-left-color:var(--primary);background:rgba(124,58,237,.08)}
+.sidebar-nav .nav-label{padding:20px 24px 6px;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted-fg);font-weight:600}
+.sidebar-footer{padding:16px 24px;border-top:1px solid var(--terminal-border);display:flex;flex-direction:column;gap:6px}
+.sidebar-footer a{font-size:.78rem;color:var(--muted);text-decoration:none;transition:color .15s}
+.sidebar-footer a:hover{color:var(--primary-light)}
+
+/* ── Mobile toggle ───────────────────────────── */
+.menu-toggle{
+  display:none;position:fixed;top:16px;left:16px;z-index:200;
+  background:var(--surface);border:1px solid var(--terminal-border);
+  color:var(--text);width:40px;height:40px;border-radius:8px;
+  cursor:pointer;font-size:1.2rem;align-items:center;justify-content:center;
+}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .menu-toggle{display:flex}
+  .overlay.open{display:block}
+  .main{margin-left:0!important;padding:24px 16px!important}
+}
+
+/* ── Main content ────────────────────────────── */
+.main{margin-left:var(--sidebar-w);padding:40px 48px 80px;max-width:960px}
+
+/* ── Hero ────────────────────────────────────── */
+.hero{margin-bottom:48px}
+.hero h2{
+  font-size:2.4rem;font-weight:800;letter-spacing:-.03em;
+  background:linear-gradient(135deg,var(--primary),var(--secondary),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1.15;margin-bottom:12px;
+}
+.hero p{color:var(--muted);font-size:1.05rem;max-width:600px}
+
+/* ── Section headings ────────────────────────── */
+.section{margin-bottom:56px}
+.section-title{font-size:1.3rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.section-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+
+/* ── Quote card ──────────────────────────────── */
+.quote-card{
+  position:relative;padding:28px 32px;border-radius:14px;
+  background:var(--surface);
+  border:1px solid transparent;
+  background-clip:padding-box;
+  margin-bottom:28px;
+}
+.quote-card::before{
+  content:'';position:absolute;inset:-1px;border-radius:15px;
+  background:linear-gradient(135deg,var(--primary),var(--secondary),var(--blue));
+  z-index:-1;
+}
+.quote-card blockquote{font-size:.95rem;color:var(--text);line-height:1.7;font-style:italic}
+
+/* ── Cards grid ──────────────────────────────── */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.card{
+  background:var(--surface);border:1px solid var(--terminal-border);border-radius:12px;
+  padding:20px;transition:all .2s ease;
+}
+.card:hover{border-color:var(--primary);transform:translateY(-2px)}
+.card h4{font-size:.88rem;font-weight:600;margin-bottom:6px;color:var(--primary-light)}
+.card p{font-size:.78rem;color:var(--muted);line-height:1.5}
+
+/* ── Accordion ───────────────────────────────── */
+.accordion{margin-bottom:16px}
+.accordion-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;background:var(--surface);border:1px solid var(--terminal-border);
+  border-radius:10px;cursor:pointer;transition:all .15s;user-select:none;
+}
+.accordion-header:hover{border-color:var(--primary)}
+.accordion-header h4{font-size:.92rem;font-weight:600}
+.accordion-arrow{
+  font-size:.7rem;color:var(--muted);transition:transform .25s ease;
+}
+.accordion.open .accordion-arrow{transform:rotate(180deg)}
+.accordion-body{
+  max-height:0;overflow:hidden;transition:max-height .35s ease;
+}
+.accordion.open .accordion-body{max-height:2000px}
+.accordion-body-inner{padding:16px 20px 8px}
+.feature-item{
+  padding:10px 0;border-bottom:1px solid var(--terminal-border);
+  display:flex;gap:12px;align-items:flex-start;
+}
+.feature-item:last-child{border-bottom:none}
+.feature-item .fi-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+.feature-item .fi-title{font-size:.85rem;font-weight:600;color:var(--text)}
+.feature-item .fi-desc{font-size:.78rem;color:var(--muted);margin-top:2px}
+
+/* ── Tables ──────────────────────────────────── */
+.styled-table{
+  width:100%;border-collapse:collapse;font-size:.82rem;margin:16px 0;
+}
+.styled-table th{
+  text-align:left;padding:10px 14px;background:var(--terminal-bg);
+  color:var(--muted);font-weight:600;font-size:.72rem;
+  text-transform:uppercase;letter-spacing:.06em;
+  border-bottom:1px solid var(--terminal-border);
+}
+.styled-table td{
+  padding:10px 14px;border-bottom:1px solid var(--terminal-border);color:var(--text);
+}
+.styled-table tr:hover td{background:var(--surface-hover)}
+
+/* ── Terminal / code blocks ──────────────────── */
+.terminal{
+  background:var(--terminal-bg);border:1px solid var(--terminal-border);
+  border-radius:10px;padding:20px 24px;font-size:.8rem;
+  line-height:1.7;overflow-x:auto;margin:16px 0;
+  color:var(--muted);
+}
+.terminal .hl{color:var(--primary-light)}
+.terminal .g{color:var(--green)}
+.terminal .b{color:var(--blue)}
+.terminal .r{color:var(--red)}
+
+/* ── Badges ──────────────────────────────────── */
+.badge{
+  display:inline-block;padding:2px 10px;border-radius:99px;
+  font-size:.68rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+}
+.badge-done{background:rgba(74,222,128,.15);color:var(--green)}
+.badge-ready{background:rgba(96,165,250,.15);color:var(--blue)}
+.badge-todo{background:rgba(136,136,160,.12);color:var(--muted)}
+
+/* ── Tech stack grid ─────────────────────────── */
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.stack-item{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface);border:1px solid var(--terminal-border);
+  border-radius:8px;padding:10px 14px;font-size:.8rem;transition:border-color .15s;
+}
+.stack-item:hover{border-color:var(--primary)}
+.stack-item .pkg{color:var(--text);font-weight:500}
+.stack-item .ver{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);background:var(--terminal-bg);padding:2px 8px;border-radius:4px}
+
+/* ── Timeline / Roadmap ──────────────────────── */
+.timeline{position:relative;padding-left:28px}
+.timeline::before{
+  content:'';position:absolute;left:8px;top:4px;bottom:4px;width:2px;
+  background:var(--terminal-border);
+}
+.tl-item{position:relative;padding:10px 0 10px 0;display:flex;align-items:center;gap:14px}
+.tl-dot{
+  position:absolute;left:-24px;width:12px;height:12px;border-radius:50%;
+  border:2px solid var(--terminal-border);background:var(--bg);flex-shrink:0;
+}
+.tl-item.done .tl-dot{border-color:var(--green);background:var(--green)}
+.tl-item.ready .tl-dot{border-color:var(--blue);background:var(--blue)}
+.tl-item.todo .tl-dot{border-color:var(--muted-fg);background:var(--muted-fg)}
+.tl-label{font-size:.85rem;font-weight:500;color:var(--text);flex:1}
+
+/* ── File tree ───────────────────────────────── */
+.tree-toggle{
+  display:flex;align-items:center;gap:8px;padding:10px 16px;
+  background:var(--surface);border:1px solid var(--terminal-border);
+  border-radius:10px;cursor:pointer;font-size:.85rem;font-weight:600;
+  color:var(--text);user-select:none;transition:border-color .15s;margin-bottom:8px;
+}
+.tree-toggle:hover{border-color:var(--primary)}
+.tree-toggle .arrow{font-size:.7rem;color:var(--muted);transition:transform .25s}
+.tree-toggle.open .arrow{transform:rotate(180deg)}
+.tree-content{
+  max-height:0;overflow:hidden;transition:max-height .35s ease;
+}
+.tree-content.open{max-height:3000px}
+.tree-content pre{
+  background:var(--terminal-bg);border:1px solid var(--terminal-border);
+  border-radius:10px;padding:20px 24px;font-size:.78rem;line-height:1.7;
+  color:var(--muted);overflow-x:auto;
+}
+</style>
+</head>
+<body>
+
+<!-- Mobile menu toggle -->
+<button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">&#9776;</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <h1>Resemble</h1>
+    <span>Strategy Dashboard</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <a href="#vision" data-section="vision">&#9670; Vision</a>
+    <a href="#features" data-section="features">&#9670; Features</a>
+    <div class="nav-label">Technical</div>
+    <a href="#engine" data-section="engine">&#9670; Engine</a>
+    <a href="#stack" data-section="stack">&#9670; Tech Stack</a>
+    <div class="nav-label">Planning</div>
+    <a href="#roadmap" data-section="roadmap">&#9670; Roadmap</a>
+    <a href="#structure" data-section="structure">&#9670; Structure</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="README.html">README</a>
+    <a href="SITECONFIGURATIONS.html">Site Configurations</a>
+    <a href="https://github.com/digitalthreadai/resemble" target="_blank" rel="noopener">GitHub &nearr;</a>
+  </div>
+</aside>
+
+<!-- Main content -->
+<main class="main">
+
+  <!-- Hero -->
+  <section class="hero">
+    <h2>Strategy &amp; Features</h2>
+    <p>Product vision, technical architecture, and roadmap for the Resemble face comparison platform. Built with Expo SDK 55 for iOS, Android, and Web from a single codebase.</p>
+  </section>
+
+  <!-- Vision -->
+  <section class="section" id="vision">
+    <div class="section-title"><span class="dot"></span> Vision</div>
+    <div class="quote-card">
+      <blockquote>
+        Resemble uses AI to compare facial features between people &mdash; scoring resemblance with a hybrid engine combining neural embeddings (70%) and geometric landmark analysis (30%). 100% on-device processing &mdash; face data never leaves your phone.
+      </blockquote>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <h4>Per-Feature Breakdown</h4>
+        <p>Eyes, nose, mouth, jawline, and eyebrows scored independently with weighted contribution to overall similarity.</p>
+      </div>
+      <div class="card">
+        <h4>Family Triangulation</h4>
+        <p>Three-way comparison between child and both parents, with per-parent inheritance percentages and combined analysis.</p>
+      </div>
+      <div class="card">
+        <h4>Deterministic Results</h4>
+        <p>Same photos always produce the same scores. No cloud randomness or server-side variation. Reproducible and trustworthy.</p>
+      </div>
+      <div class="card">
+        <h4>Privacy First</h4>
+        <p>All face processing runs on-device. No images uploaded, no data stored remotely, no accounts required.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="section-title"><span class="dot"></span> Features</div>
+
+    <div class="accordion open" id="acc-core">
+      <div class="accordion-header" onclick="toggleAccordion('acc-core')">
+        <h4>Core Features</h4>
+        <span class="accordion-arrow">&#9660;</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          <div class="feature-item"><span class="fi-icon">&#128106;</span><div><div class="fi-title">Family Resemblance</div><div class="fi-desc">Upload child + two parents. See per-feature scores, parent similarity split, and animated gauge results.</div></div></div>
+          <div class="feature-item"><span class="fi-icon">&#11088;</span><div><div class="fi-title">Celebrity Match</div><div class="fi-desc">Compare your face to any celebrity. Get ranked similarity scores with per-feature breakdown.</div></div></div>
+          <div class="feature-item"><span class="fi-icon">&#128247;</span><div><div class="fi-title">FaceID Camera Scanner</div><div class="fi-desc">Real-time face detection with oval guide overlay. Captures optimal face photo with quality assessment.</div></div></div>
+          <div class="feature-item"><span class="fi-icon">&#128203;</span><div><div class="fi-title">History</div><div class="fi-desc">Persistent comparison history stored locally. View, re-open, or delete past results.</div></div></div>
+          <div class="feature-item"><span class="fi-icon">&#128228;</span><div><div class="fi-title">Share</div><div class="fi-desc">Capture result screens as images and share via native share sheet or save to gallery.</div></div></div>
+          <div class="feature-item"><span class="fi-icon">&#128269;</span><div><div class="fi-title">Celebrity Search</div><div class="fi-desc">Search and select from celebrity database with autocomplete and category filters.</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion" id="acc-infra">
+      <div class="accordion-header" onclick="toggleAccordion('acc-infra')">
+        <h4>Infrastructure</h4>
+        <span class="accordion-arrow">&#9660;</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-body-inner">
+          <div class="feature-item"><span class="fi-icon">&#9881;</span><div><div class="fi-title">Hybrid Scoring Engine</div><div class="fi-desc">70% neural embedding similarity + 30% geometric landmark analysis. Weighted per-feature scoring with sigmoid kinship calibration.</div></div></div>
+          <div class="feature-item"><span class="fi-icon">&#127760;</span><div><div class="fi-title">Cross-Platform Detection</div><div class="fi-desc">face-api.js on web, ML Kit + Vision Camera on native. Platform-agnostic landmark interface.</div></div></div>
+          <div class="feature-item"><span class="fi-icon">&#128260;</span><div><div class="fi-title">ML Kit Landmark Mapper</div><div class="fi-desc">Translates ML Kit contour points to 68-point dlib-compatible landmarks for unified engine processing.</div></div></div>
+          <div class="feature-item"><span class="fi-icon">&#128200;</span><div><div class="fi-title">Quality Assessment</div><div class="fi-desc">Evaluates face size, centering, lighting, and landmark confidence. Blocks low-quality inputs from analysis.</div></div></div>
+          <div class="feature-item"><span class="fi-icon">&#128218;</span><div><div class="fi-title">Onboarding</div><div class="fi-desc">Animated walkthrough explaining modes, camera usage, and privacy guarantees on first launch.</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Engine Architecture -->
+  <section class="section" id="engine">
+    <div class="section-title"><span class="dot"></span> Engine Architecture</div>
+
+    <h4 style="font-size:.9rem;margin-bottom:12px;color:var(--primary-light)">Scoring Pipeline</h4>
+    <div class="terminal">
+<span class="b">Photo Input</span>
+  &darr;
+<span class="hl">Platform Face Detector</span>  (face-api.js | ML Kit + Vision Camera)
+  &darr;
+<span class="g">68-Point Landmark Extraction</span>  &rarr;  Normalise to unit square
+  &darr;
+<span class="hl">Per-Feature Similarity</span>
+  &boxvr;&boxh; Eyes ............. <span class="b">25%</span> weight
+  &boxvr;&boxh; Nose ............. <span class="b">25%</span> weight
+  &boxvr;&boxh; Lips &amp; Mouth ..... <span class="b">20%</span> weight
+  &boxvr;&boxh; Face Shape ....... <span class="b">15%</span> weight
+  &boxur;&boxh; Eyebrows ......... <span class="b">15%</span> weight
+  &darr;
+<span class="g">Weighted Overall Score</span>  &rarr;  Sigmoid Kinship Calibration  &rarr;  <span class="hl">Final %</span>
+    </div>
+
+    <h4 style="font-size:.9rem;margin:24px 0 12px;color:var(--primary-light)">Feature Weights</h4>
+    <table class="styled-table">
+      <thead>
+        <tr><th>Feature</th><th>Weight</th><th>Landmarks</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Eyes</td><td><strong>25%</strong></td><td>12 pts (36-47)</td><td>Eye shape &amp; lid curvature</td></tr>
+        <tr><td>Nose</td><td><strong>25%</strong></td><td>9 pts (27-35)</td><td>Bridge, tip &amp; nostril width</td></tr>
+        <tr><td>Lips &amp; Mouth</td><td><strong>20%</strong></td><td>20 pts (48-67)</td><td>Lip shape, cupid's bow &amp; width</td></tr>
+        <tr><td>Face Shape</td><td><strong>15%</strong></td><td>17 pts (0-16)</td><td>Jawline width &amp; chin shape</td></tr>
+        <tr><td>Eyebrows</td><td><strong>15%</strong></td><td>10 pts (17-26)</td><td>Arch height &amp; shape</td></tr>
+      </tbody>
+    </table>
+
+    <h4 style="font-size:.9rem;margin:24px 0 12px;color:var(--primary-light)">Platform Detection</h4>
+    <table class="styled-table">
+      <thead>
+        <tr><th>Platform</th><th>Detector</th><th>Model</th><th>FPS</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Web</td><td>face-api.js</td><td>SSD MobileNet v1 + 68-pt landmarks</td><td>~15</td></tr>
+        <tr><td>iOS / Android</td><td>ML Kit + Vision Camera</td><td>Google ML Kit Face Detection</td><td>~30</td></tr>
+      </tbody>
+    </table>
+
+    <h4 style="font-size:.9rem;margin:24px 0 12px;color:var(--primary-light)">Kinship Calibration</h4>
+    <div class="terminal">
+<span class="hl">Raw cosine similarity</span> (0.0 &ndash; 1.0)
+  &darr;
+<span class="g">Sigmoid mapping</span>: score = 1 / (1 + exp(-k * (raw - midpoint)))
+  &boxvr;&boxh; Family range: <span class="b">0.30 &ndash; 0.60</span> raw &rarr; maps to intuitive 40% &ndash; 85% display
+  &boxur;&boxh; Prevents clustering around 50% &mdash; spreads scores into meaningful range
+  &darr;
+<span class="hl">Display percentage</span>: calibrated for user comprehension
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section class="section" id="stack">
+    <div class="section-title"><span class="dot"></span> Tech Stack</div>
+    <div class="stack-grid">
+      <div class="stack-item"><span class="pkg">expo</span><span class="ver">~55.0.5</span></div>
+      <div class="stack-item"><span class="pkg">react</span><span class="ver">19.2.0</span></div>
+      <div class="stack-item"><span class="pkg">react-native</span><span class="ver">0.83.2</span></div>
+      <div class="stack-item"><span class="pkg">react-dom</span><span class="ver">19.2.0</span></div>
+      <div class="stack-item"><span class="pkg">expo-router</span><span class="ver">~55.0.4</span></div>
+      <div class="stack-item"><span class="pkg">expo-camera</span><span class="ver">~55.0.9</span></div>
+      <div class="stack-item"><span class="pkg">react-native-vision-camera</span><span class="ver">^4.7.3</span></div>
+      <div class="stack-item"><span class="pkg">react-native-reanimated</span><span class="ver">4.2.1</span></div>
+      <div class="stack-item"><span class="pkg">react-native-svg</span><span class="ver">15.15.3</span></div>
+      <div class="stack-item"><span class="pkg">react-native-gesture-handler</span><span class="ver">~2.30.0</span></div>
+      <div class="stack-item"><span class="pkg">react-native-screens</span><span class="ver">~4.23.0</span></div>
+      <div class="stack-item"><span class="pkg">react-native-web</span><span class="ver">^0.21.0</span></div>
+      <div class="stack-item"><span class="pkg">react-native-fast-tflite</span><span class="ver">^2.0.0</span></div>
+      <div class="stack-item"><span class="pkg">react-native-worklets</span><span class="ver">^0.8.1</span></div>
+      <div class="stack-item"><span class="pkg">react-native-confetti-cannon</span><span class="ver">^1.5.2</span></div>
+      <div class="stack-item"><span class="pkg">react-native-view-shot</span><span class="ver">4.0.3</span></div>
+      <div class="stack-item"><span class="pkg">react-native-safe-area-context</span><span class="ver">~5.6.2</span></div>
+      <div class="stack-item"><span class="pkg">expo-image-picker</span><span class="ver">~55.0.11</span></div>
+      <div class="stack-item"><span class="pkg">expo-image-manipulator</span><span class="ver">^55.0.12</span></div>
+      <div class="stack-item"><span class="pkg">expo-file-system</span><span class="ver">~55.0.11</span></div>
+      <div class="stack-item"><span class="pkg">expo-sharing</span><span class="ver">~55.0.12</span></div>
+      <div class="stack-item"><span class="pkg">expo-linear-gradient</span><span class="ver">^55.0.9</span></div>
+      <div class="stack-item"><span class="pkg">expo-font</span><span class="ver">^55.0.4</span></div>
+      <div class="stack-item"><span class="pkg">expo-constants</span><span class="ver">~55.0.7</span></div>
+      <div class="stack-item"><span class="pkg">expo-linking</span><span class="ver">~55.0.7</span></div>
+      <div class="stack-item"><span class="pkg">expo-status-bar</span><span class="ver">~55.0.4</span></div>
+      <div class="stack-item"><span class="pkg">@expo/metro-runtime</span><span class="ver">~55.0.6</span></div>
+      <div class="stack-item"><span class="pkg">@expo/vector-icons</span><span class="ver">^15.0.2</span></div>
+      <div class="stack-item"><span class="pkg">@expo-google-fonts/inter</span><span class="ver">^0.4.2</span></div>
+      <div class="stack-item"><span class="pkg">@expo-google-fonts/jetbrains-mono</span><span class="ver">^0.4.1</span></div>
+      <div class="stack-item"><span class="pkg">@expo-google-fonts/space-grotesk</span><span class="ver">^0.4.1</span></div>
+      <div class="stack-item"><span class="pkg">async-storage</span><span class="ver">2.2.0</span></div>
+      <div class="stack-item"><span class="pkg">openai</span><span class="ver">^6.32.0</span></div>
+      <div class="stack-item"><span class="pkg">vision-camera-face-detector</span><span class="ver">^1.10.2</span></div>
+      <div class="stack-item"><span class="pkg">typescript</span><span class="ver">~5.9.2</span></div>
+    </div>
+  </section>
+
+  <!-- Roadmap -->
+  <section class="section" id="roadmap">
+    <div class="section-title"><span class="dot"></span> Roadmap</div>
+    <div class="timeline">
+      <div class="tl-item done"><span class="tl-dot"></span><span class="tl-label">Foundation &mdash; Expo Router, dark theme, layout</span><span class="badge badge-done">DONE</span></div>
+      <div class="tl-item done"><span class="tl-dot"></span><span class="tl-label">Web Detection &mdash; face-api.js integration</span><span class="badge badge-done">DONE</span></div>
+      <div class="tl-item done"><span class="tl-dot"></span><span class="tl-label">Engine to UI &mdash; wired scoring to components</span><span class="badge badge-done">DONE</span></div>
+      <div class="tl-item done"><span class="tl-dot"></span><span class="tl-label">Hybrid Scoring &mdash; 70% embeddings + 30% landmarks</span><span class="badge badge-done">DONE</span></div>
+      <div class="tl-item done"><span class="tl-dot"></span><span class="tl-label">Native Detection &mdash; ML Kit + Vision Camera</span><span class="badge badge-done">DONE</span></div>
+      <div class="tl-item done"><span class="tl-dot"></span><span class="tl-label">History &amp; Share &mdash; local persistence, view-shot export</span><span class="badge badge-done">DONE</span></div>
+      <div class="tl-item done"><span class="tl-dot"></span><span class="tl-label">Celebrity Search &mdash; database + autocomplete</span><span class="badge badge-done">DONE</span></div>
+      <div class="tl-item done"><span class="tl-dot"></span><span class="tl-label">Onboarding &mdash; animated walkthrough flow</span><span class="badge badge-done">DONE</span></div>
+      <div class="tl-item done"><span class="tl-dot"></span><span class="tl-label">Premium UI &mdash; glassmorphism, gauges, animations</span><span class="badge badge-done">DONE</span></div>
+      <div class="tl-item ready"><span class="tl-dot"></span><span class="tl-label">EAS Build &mdash; production build configuration</span><span class="badge badge-ready">READY</span></div>
+      <div class="tl-item todo"><span class="tl-dot"></span><span class="tl-label">Camera Processor &mdash; real-time frame processing pipeline</span><span class="badge badge-todo">TODO</span></div>
+      <div class="tl-item todo"><span class="tl-dot"></span><span class="tl-label">Celebrity DB &mdash; expanded database with embedding cache</span><span class="badge badge-todo">TODO</span></div>
+      <div class="tl-item todo"><span class="tl-dot"></span><span class="tl-label">Kinship Fine-tune &mdash; calibrated sigmoid per ethnicity</span><span class="badge badge-todo">TODO</span></div>
+    </div>
+  </section>
+
+  <!-- File Structure -->
+  <section class="section" id="structure">
+    <div class="section-title"><span class="dot"></span> File Structure</div>
+    <div class="tree-toggle" id="tree-toggle" onclick="toggleTree()">
+      <span class="arrow">&#9660;</span> Project Directory Tree
+    </div>
+    <div class="tree-content" id="tree-content">
+      <pre>
+resemble/
+  app/
+    _layout.tsx           Root layout (dark theme, Stack navigator)
+    index.tsx             Landing page (hero + feature cards)
+    family.tsx            Family comparison (3 upload slots + results)
+    celebrity.tsx         Celebrity match (2 upload slots + results)
+    camera.tsx            FaceID-style camera scanner with oval guide
+  src/
+    engine/
+      constants.ts        FEATURES (5 regions), FEATURE_WEIGHTS
+      landmarks.ts        normaliseLandmarks, featureSim, computeScores
+      accuracy.ts         computeAccuracy, assessCameraQuality
+      index.ts            barrel export
+    components/
+      Button.tsx          primary / secondary / ghost variants
+      UploadCard.tsx      Photo upload with preview, camera btn, quality
+      GaugeChart.tsx      Animated SVG circular gauge
+      FeatureBar.tsx      Animated horizontal bars + FeatureBreakdown
+      FaceOvalGuide.tsx   SVG oval overlay for camera (FaceID-style)
+    hooks/
+      useImagePicker.ts   Generic image picker with slot management
+    theme/
+      colors.ts           Dark glassmorphism color system
+      spacing.ts          Spacing, radius, breakpoints
+  docs/
+    COO.html              This strategy dashboard
+    README.html           Project readme
+    SITECONFIGURATIONS.html  Site configuration guide
+  package.json
+  tsconfig.json
+  app.json
+  eas.json
+      </pre>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// Sidebar toggle (mobile)
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+
+// Accordion toggle
+function toggleAccordion(id){
+  document.getElementById(id).classList.toggle('open');
+}
+
+// Tree toggle
+function toggleTree(){
+  document.getElementById('tree-toggle').classList.toggle('open');
+  document.getElementById('tree-content').classList.toggle('open');
+}
+
+// Scroll spy
+(function(){
+  const links=document.querySelectorAll('.sidebar-nav a[data-section]');
+  const sections=[];
+  links.forEach(function(a){
+    const s=document.getElementById(a.dataset.section);
+    if(s) sections.push({el:s,link:a});
+  });
+  function onScroll(){
+    let current=null;
+    const scrollY=window.scrollY+80;
+    for(let i=sections.length-1;i>=0;i--){
+      if(sections[i].el.offsetTop<=scrollY){current=sections[i];break}
+    }
+    links.forEach(function(l){l.classList.remove('active')});
+    if(current) current.link.classList.add('active');
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+})();
+</script>
+</body>
+</html>

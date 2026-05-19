@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resemble — Setup Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A0A0F; --surface: #12121A; --surface-hover: #1E1E2E;
+  --terminal-bg: #1A1A2E; --terminal-border: #2A2A3E;
+  --text: #E8E8ED; --muted: #8888A0; --muted-fg: #6E6E88;
+  --primary: #7c3aed; --primary-light: #c4b5fd; --secondary: #a855f7;
+  --green: #4ADE80; --blue: #60A5FA; --purple: #A78BFA; --red: #F87171;
+  --sidebar-w: 260px;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+code, pre, .mono { font-family: 'JetBrains Mono', monospace; }
+a { color: var(--primary-light); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--secondary); }
+
+/* ── Sidebar ── */
+.sidebar {
+  position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh;
+  background: var(--surface); border-right: 1px solid var(--terminal-border);
+  display: flex; flex-direction: column; z-index: 100;
+  overflow-y: auto; overflow-x: hidden;
+}
+.sidebar-header { padding: 28px 20px 20px; border-bottom: 1px solid var(--terminal-border); }
+.sidebar-logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.sidebar-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-top: 4px; }
+.sidebar-estimate { display: inline-block; margin-top: 10px; font-size: 12px; color: var(--green); background: rgba(74,222,128,0.08); padding: 3px 10px; border-radius: 12px; border: 1px solid rgba(74,222,128,0.15); }
+
+/* Progress */
+.sidebar-progress { padding: 16px 20px; border-bottom: 1px solid var(--terminal-border); }
+.progress-track { width: 100%; height: 6px; background: var(--surface-hover); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 3px; transition: width 0.4s ease; }
+.progress-text { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+/* Nav */
+.sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+.sidebar-nav a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px; font-size: 13px; color: var(--muted);
+  transition: all 0.2s; border-left: 3px solid transparent;
+}
+.sidebar-nav a:hover { color: var(--text); background: var(--surface-hover); }
+.sidebar-nav a.active { color: var(--primary-light); border-left-color: var(--primary); background: rgba(124,58,237,0.06); }
+.sidebar-nav .nav-num { font-size: 11px; font-weight: 700; color: var(--muted-fg); min-width: 18px; text-align: center; }
+.sidebar-nav a.active .nav-num { color: var(--primary-light); }
+
+/* Sidebar footer */
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--terminal-border); display: flex; gap: 12px; flex-wrap: wrap; }
+.sidebar-footer a { font-size: 12px; color: var(--muted); }
+.sidebar-footer a:hover { color: var(--primary-light); }
+
+/* ── Main ── */
+.main { margin-left: var(--sidebar-w); min-height: 100vh; }
+.main-inner { max-width: 860px; margin: 0 auto; padding: 0 32px 80px; }
+
+/* ── Hero ── */
+.hero {
+  padding: 80px 0 48px; text-align: center;
+  border-bottom: 1px solid var(--terminal-border); margin-bottom: 48px;
+}
+.hero h1 {
+  font-size: 42px; font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--secondary), var(--blue));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero p { font-size: 16px; color: var(--muted); margin-top: 12px; }
+
+/* ── Steps ── */
+.step { margin-bottom: 56px; scroll-margin-top: 32px; }
+.step-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.step-num {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.step-title { font-size: 24px; font-weight: 700; }
+.step-time { font-size: 12px; color: var(--muted); background: var(--surface); padding: 3px 10px; border-radius: 10px; border: 1px solid var(--terminal-border); margin-left: auto; white-space: nowrap; }
+.step-body { padding-left: 60px; }
+
+/* ── Terminal ── */
+.terminal {
+  background: var(--terminal-bg); border: 1px solid var(--terminal-border);
+  border-radius: 10px; overflow: hidden; margin: 16px 0;
+}
+.terminal-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; background: rgba(42,42,62,0.6); border-bottom: 1px solid var(--terminal-border);
+}
+.terminal-dots { display: flex; gap: 6px; }
+.terminal-dots span { width: 10px; height: 10px; border-radius: 50%; }
+.terminal-dots span:nth-child(1) { background: #F87171; }
+.terminal-dots span:nth-child(2) { background: #FBBF24; }
+.terminal-dots span:nth-child(3) { background: #4ADE80; }
+.terminal-copy {
+  background: none; border: 1px solid var(--terminal-border); color: var(--muted);
+  padding: 3px 10px; border-radius: 6px; cursor: pointer; font-size: 11px;
+  font-family: 'Inter', sans-serif; transition: all 0.2s;
+}
+.terminal-copy:hover { color: var(--text); border-color: var(--primary); }
+.terminal pre { padding: 16px 18px; overflow-x: auto; font-size: 13px; line-height: 1.7; color: var(--text); }
+.terminal .prompt { color: var(--green); }
+.terminal .comment { color: var(--muted-fg); }
+
+/* ── Tables ── */
+.config-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+.config-table th {
+  text-align: left; padding: 10px 14px; background: var(--surface-hover);
+  color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
+  border-bottom: 1px solid var(--terminal-border);
+}
+.config-table td { padding: 10px 14px; border-bottom: 1px solid rgba(42,42,62,0.5); }
+.config-table tr:hover td { background: rgba(124,58,237,0.03); }
+.config-table code { background: var(--terminal-bg); padding: 2px 7px; border-radius: 4px; font-size: 12px; }
+.badge-yes { color: var(--green); font-size: 12px; font-weight: 600; }
+.badge-opt { color: var(--muted); font-size: 12px; }
+
+/* ── Tabs (platform cards) ── */
+.platform-tabs { display: flex; gap: 8px; margin-bottom: 0; }
+.platform-tab {
+  padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--terminal-border);
+  border-bottom: none; border-radius: 8px 8px 0 0; color: var(--muted);
+  transition: all 0.2s; font-family: 'Inter', sans-serif;
+}
+.platform-tab.active { background: var(--terminal-bg); color: var(--primary-light); border-color: var(--terminal-border); }
+.platform-tab:hover { color: var(--text); }
+.platform-panels { border: 1px solid var(--terminal-border); border-radius: 0 10px 10px 10px; overflow: hidden; background: var(--terminal-bg); }
+.platform-panel { display: none; padding: 20px; }
+.platform-panel.active { display: block; }
+.platform-panel code { background: var(--surface); padding: 2px 7px; border-radius: 4px; font-size: 13px; }
+.platform-panel .cmd { color: var(--green); font-weight: 500; font-family: 'JetBrains Mono', monospace; font-size: 14px; margin-bottom: 6px; }
+.platform-panel .url { color: var(--blue); }
+
+/* ── Checklist ── */
+.checklist { margin-top: 32px; }
+.checklist-progress { margin-bottom: 20px; }
+.checklist-items { display: flex; flex-direction: column; gap: 6px; }
+.check-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; background: var(--surface); border: 1px solid var(--terminal-border);
+  border-radius: 8px; cursor: pointer; transition: all 0.2s; user-select: none;
+}
+.check-item:hover { border-color: var(--primary); background: var(--surface-hover); }
+.check-item.checked { border-color: rgba(74,222,128,0.25); }
+.check-item.checked .check-label { color: var(--muted); text-decoration: line-through; }
+.check-box {
+  width: 20px; height: 20px; border-radius: 5px; border: 2px solid var(--terminal-border);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: all 0.2s;
+}
+.check-item.checked .check-box { background: var(--green); border-color: var(--green); }
+.check-box svg { opacity: 0; transition: opacity 0.2s; }
+.check-item.checked .check-box svg { opacity: 1; }
+.check-label { font-size: 14px; }
+
+/* ── Misc ── */
+p { margin-bottom: 12px; }
+h3 { font-size: 16px; font-weight: 700; margin: 20px 0 10px; }
+ul.list { padding-left: 20px; margin: 10px 0; }
+ul.list li { margin-bottom: 6px; font-size: 14px; }
+ul.list li::marker { color: var(--primary); }
+.note { background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.15); border-radius: 8px; padding: 12px 16px; font-size: 13px; color: var(--blue); margin: 12px 0; }
+.note strong { color: var(--blue); }
+
+/* ── Mobile menu toggle ── */
+.mobile-toggle {
+  display: none; position: fixed; top: 12px; left: 12px; z-index: 200;
+  width: 40px; height: 40px; background: var(--surface); border: 1px solid var(--terminal-border);
+  border-radius: 8px; cursor: pointer; align-items: center; justify-content: center;
+}
+.mobile-toggle svg { color: var(--text); }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.open { display: block; }
+  .main { margin-left: 0; }
+  .main-inner { padding: 0 16px 60px; }
+  .mobile-toggle { display: flex; }
+  .hero h1 { font-size: 28px; }
+  .step-body { padding-left: 0; }
+  .step-header { flex-wrap: wrap; }
+  .step-time { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- Mobile toggle -->
+<button class="mobile-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h14M3 10h14M3 14h14"/></svg>
+</button>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">Resemble</div>
+    <div class="sidebar-label">Setup Guide</div>
+    <div class="sidebar-estimate">~15 min setup</div>
+  </div>
+  <div class="sidebar-progress">
+    <div class="progress-track"><div class="progress-fill" id="sidebarProgress"></div></div>
+    <div class="progress-text" id="sidebarCount">0 / 12 completed</div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <a href="#step-1"><span class="nav-num">1</span>Prerequisites</a>
+    <a href="#step-2"><span class="nav-num">2</span>Clone &amp; Install</a>
+    <a href="#step-3"><span class="nav-num">3</span>Environment</a>
+    <a href="#step-4"><span class="nav-num">4</span>Run Dev Server</a>
+    <a href="#step-5"><span class="nav-num">5</span>EAS Build</a>
+    <a href="#step-6"><span class="nav-num">6</span>Configuration</a>
+    <a href="#step-7"><span class="nav-num">7</span>Models</a>
+    <a href="#step-8"><span class="nav-num">8</span>Deployment</a>
+    <a href="#step-9"><span class="nav-num">9</span>Testing</a>
+    <a href="#checklist"><span class="nav-num">&check;</span>Checklist</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="README.html">README</a>
+    <a href="COO.html">COO</a>
+    <a href="https://github.com/digitalthreadai/Resemble" target="_blank">GitHub</a>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+<div class="main-inner">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Setup Guide</h1>
+    <p>Get Resemble running on web, iOS, and Android</p>
+  </div>
+
+  <!-- Step 1 -->
+  <section class="step" id="step-1">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-title">Prerequisites</div>
+      <div class="step-time">~2 min</div>
+    </div>
+    <div class="step-body">
+      <p>Ensure the following tools are installed on your machine before proceeding.</p>
+      <h3>Required</h3>
+      <ul class="list">
+        <li><strong>Node.js 18+</strong> &mdash; <a href="https://nodejs.org" target="_blank">nodejs.org</a></li>
+        <li><strong>npm</strong> (bundled with Node.js)</li>
+        <li><strong>Git</strong> &mdash; <a href="https://git-scm.com" target="_blank">git-scm.com</a></li>
+      </ul>
+      <h3>Optional (for native builds)</h3>
+      <ul class="list">
+        <li><strong>Expo CLI</strong> &mdash; <code>npm i -g expo-cli</code></li>
+        <li><strong>EAS CLI</strong> &mdash; <code>npm i -g eas-cli</code></li>
+        <li><strong>Android Studio</strong> &mdash; for Android emulator</li>
+        <li><strong>Apple Developer Account</strong> &mdash; for iOS distribution</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Step 2 -->
+  <section class="step" id="step-2">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-title">Clone &amp; Install</div>
+      <div class="step-time">~3 min</div>
+    </div>
+    <div class="step-body">
+      <p>Clone the repository and install all dependencies.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span></span><span></span><span></span></div>
+          <button class="terminal-copy" onclick="copyBlock(this)">Copy</button>
+        </div>
+        <pre><span class="prompt">$</span> git clone https://github.com/digitalthreadai/Resemble.git
+<span class="prompt">$</span> cd Resemble
+<span class="prompt">$</span> npm install</pre>
+      </div>
+      <div class="note"><strong>Note:</strong> The install may take a minute as native camera and ML dependencies are resolved.</div>
+    </div>
+  </section>
+
+  <!-- Step 3 -->
+  <section class="step" id="step-3">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div class="step-title">Environment Variables</div>
+      <div class="step-time">~1 min</div>
+    </div>
+    <div class="step-body">
+      <p>Resemble requires minimal environment configuration. The only variable is needed for celebrity match mode.</p>
+      <table class="config-table">
+        <thead><tr><th>Variable</th><th>Description</th><th>Required</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>EXPO_PUBLIC_GROQ_API_KEY</code></td>
+            <td>Groq API key for celebrity search</td>
+            <td><span class="badge-opt">Only for celebrity mode</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span></span><span></span><span></span></div>
+          <button class="terminal-copy" onclick="copyBlock(this)">Copy</button>
+        </div>
+        <pre><span class="prompt">$</span> echo "EXPO_PUBLIC_GROQ_API_KEY=your_key" > .env.local</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 4 -->
+  <section class="step" id="step-4">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div class="step-title">Run Dev Server</div>
+      <div class="step-time">~2 min</div>
+    </div>
+    <div class="step-body">
+      <p>Choose a platform to start the development server.</p>
+      <div class="platform-tabs">
+        <button class="platform-tab active" onclick="switchTab(event, 'tab-web')">Web</button>
+        <button class="platform-tab" onclick="switchTab(event, 'tab-android')">Android</button>
+        <button class="platform-tab" onclick="switchTab(event, 'tab-ios')">iOS</button>
+        <button class="platform-tab" onclick="switchTab(event, 'tab-universal')">Universal</button>
+      </div>
+      <div class="platform-panels">
+        <div class="platform-panel active" id="tab-web">
+          <div class="cmd">npm run web</div>
+          <p>Opens in your default browser at <code class="url">http://localhost:4003</code></p>
+          <p style="font-size:13px;color:var(--muted);">Fastest way to test UI changes. Camera uses the browser's getUserMedia API.</p>
+        </div>
+        <div class="platform-panel" id="tab-android">
+          <div class="cmd">npm run android</div>
+          <p>Launches the Android emulator or connects to a USB device via ADB.</p>
+          <p style="font-size:13px;color:var(--muted);">Requires Android Studio with an emulator image configured.</p>
+        </div>
+        <div class="platform-panel" id="tab-ios">
+          <div class="cmd">npm run ios</div>
+          <p>Launches the iOS Simulator (macOS only).</p>
+          <p style="font-size:13px;color:var(--muted);">Requires Xcode and a valid simulator runtime. Not available on Windows.</p>
+        </div>
+        <div class="platform-panel" id="tab-universal">
+          <div class="cmd">npx expo start</div>
+          <p>Starts the Expo dev server with a QR code. Scan with Expo Go on a physical device or press <code>w</code> for web, <code>a</code> for Android, <code>i</code> for iOS.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 5 -->
+  <section class="step" id="step-5">
+    <div class="step-header">
+      <div class="step-num">5</div>
+      <div class="step-title">EAS Cloud Build</div>
+      <div class="step-time">~10 min</div>
+    </div>
+    <div class="step-body">
+      <p>Use Expo Application Services (EAS) to build native binaries in the cloud.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span></span><span></span><span></span></div>
+          <button class="terminal-copy" onclick="copyBlock(this)">Copy</button>
+        </div>
+        <pre><span class="comment"># Install EAS CLI and log in</span>
+<span class="prompt">$</span> npm i -g eas-cli
+<span class="prompt">$</span> eas login
+
+<span class="comment"># Build for iOS</span>
+<span class="prompt">$</span> eas build --platform ios --profile preview
+
+<span class="comment"># Build for Android</span>
+<span class="prompt">$</span> eas build --platform android --profile preview</pre>
+      </div>
+      <h3>Build Profiles</h3>
+      <table class="config-table">
+        <thead><tr><th>Profile</th><th>Purpose</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td><code>development</code></td><td>Dev client with debug tools</td><td>.apk / .app</td></tr>
+          <tr><td><code>preview</code></td><td>Internal testing builds</td><td>.apk / .ipa (ad hoc)</td></tr>
+          <tr><td><code>production</code></td><td>Store-ready builds</td><td>.aab / .ipa (App Store)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Step 6 -->
+  <section class="step" id="step-6">
+    <div class="step-header">
+      <div class="step-num">6</div>
+      <div class="step-title">Configuration</div>
+      <div class="step-time"></div>
+    </div>
+    <div class="step-body">
+      <h3>Expo Plugins (app.json)</h3>
+      <table class="config-table">
+        <thead><tr><th>Plugin</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>expo-camera</code></td><td>Camera access for face capture</td></tr>
+          <tr><td><code>expo-image-picker</code></td><td>Gallery photo selection</td></tr>
+          <tr><td><code>expo-router</code></td><td>File-based navigation</td></tr>
+          <tr><td><code>react-native-vision-camera</code></td><td>High-perf native camera with frame processors</td></tr>
+        </tbody>
+      </table>
+      <h3>Permissions</h3>
+      <table class="config-table">
+        <thead><tr><th>Platform</th><th>Permission</th><th>Key</th></tr></thead>
+        <tbody>
+          <tr><td>iOS</td><td>Camera</td><td><code>NSCameraUsageDescription</code></td></tr>
+          <tr><td>iOS</td><td>Photo Library</td><td><code>NSPhotoLibraryUsageDescription</code></td></tr>
+          <tr><td>Android</td><td>Camera</td><td><code>android.permission.CAMERA</code></td></tr>
+          <tr><td>Android</td><td>Storage</td><td><code>android.permission.READ_EXTERNAL_STORAGE</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Step 7 -->
+  <section class="step" id="step-7">
+    <div class="step-header">
+      <div class="step-num">7</div>
+      <div class="step-title">Face Detection Models</div>
+      <div class="step-time"></div>
+    </div>
+    <div class="step-body">
+      <h3>Web</h3>
+      <p>Models are auto-loaded from CDN via <code>face-api.js</code> on first page load. Three models are fetched: SSD MobileNet (face detection), 68-point landmark model, and face recognition net. Total download is approximately 50 MB, cached by the browser after first load.</p>
+      <h3>Native (iOS / Android)</h3>
+      <p><strong>MobileFaceNet</strong> is bundled with the app binary at 5.2 MB. Google ML Kit Face Detection is included via the Expo SDK and handles real-time 30fps landmark extraction through Vision Camera frame processors.</p>
+    </div>
+  </section>
+
+  <!-- Step 8 -->
+  <section class="step" id="step-8">
+    <div class="step-header">
+      <div class="step-num">8</div>
+      <div class="step-title">Deployment</div>
+      <div class="step-time"></div>
+    </div>
+    <div class="step-body">
+      <h3>GitHub Pages (web)</h3>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span></span><span></span><span></span></div>
+          <button class="terminal-copy" onclick="copyBlock(this)">Copy</button>
+        </div>
+        <pre><span class="prompt">$</span> npx expo export --platform web
+<span class="prompt">$</span> npx gh-pages -d dist</pre>
+      </div>
+      <h3>Vercel / Netlify</h3>
+      <p>Point the build command to <code>npx expo export --platform web</code> and set the output directory to <code>dist</code>. No server required &mdash; the export produces a fully static site.</p>
+      <h3>App Store / Google Play</h3>
+      <p>Use EAS Submit to upload production builds directly to the stores:</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span></span><span></span><span></span></div>
+          <button class="terminal-copy" onclick="copyBlock(this)">Copy</button>
+        </div>
+        <pre><span class="prompt">$</span> eas submit --platform ios
+<span class="prompt">$</span> eas submit --platform android</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 9 -->
+  <section class="step" id="step-9">
+    <div class="step-header">
+      <div class="step-num">9</div>
+      <div class="step-title">Testing</div>
+      <div class="step-time"></div>
+    </div>
+    <div class="step-body">
+      <p>Verify your setup with these commands.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span></span><span></span><span></span></div>
+          <button class="terminal-copy" onclick="copyBlock(this)">Copy</button>
+        </div>
+        <pre><span class="comment"># TypeScript type check</span>
+<span class="prompt">$</span> npx tsc --noEmit
+
+<span class="comment"># Web build verification</span>
+<span class="prompt">$</span> npx expo export --platform web</pre>
+      </div>
+      <p>Both commands should exit with code 0. If the type check reports errors, fix them before proceeding with deployment.</p>
+    </div>
+  </section>
+
+  <!-- Checklist -->
+  <section class="step" id="checklist">
+    <div class="step-header">
+      <div class="step-num">&check;</div>
+      <div class="step-title">Setup Checklist</div>
+    </div>
+    <div class="step-body">
+      <div class="checklist">
+        <div class="checklist-progress">
+          <div class="progress-track"><div class="progress-fill" id="checklistProgress"></div></div>
+          <div class="progress-text" id="checklistCount">0 / 12 completed</div>
+        </div>
+        <div class="checklist-items" id="checklistItems">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<script>
+// ── Checklist Data ──
+const CHECKLIST = [
+  'Node.js 18+ installed',
+  'Repository cloned',
+  'npm install completed',
+  'Web dev server runs',
+  '.env.local configured',
+  'EAS CLI installed',
+  'Expo account logged in',
+  'First iOS build completed',
+  'First Android build completed',
+  'Web export builds',
+  'GitHub Pages deployed',
+  'Type check passes'
+];
+
+const STORAGE_KEY = 'resemble-setup-checklist';
+
+function loadChecked() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+}
+function saveChecked(arr) { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
+
+function renderChecklist() {
+  const container = document.getElementById('checklistItems');
+  const checked = loadChecked();
+  container.innerHTML = '';
+  CHECKLIST.forEach((label, i) => {
+    const isChecked = checked.includes(i);
+    const el = document.createElement('div');
+    el.className = 'check-item' + (isChecked ? ' checked' : '');
+    el.innerHTML = `<div class="check-box"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-label">${label}</span>`;
+    el.addEventListener('click', () => {
+      const c = loadChecked();
+      if (c.includes(i)) { c.splice(c.indexOf(i), 1); } else { c.push(i); }
+      saveChecked(c);
+      renderChecklist();
+    });
+    container.appendChild(el);
+  });
+  updateProgress(checked.length);
+}
+
+function updateProgress(count) {
+  const total = CHECKLIST.length;
+  const pct = Math.round((count / total) * 100);
+  document.getElementById('checklistProgress').style.width = pct + '%';
+  document.getElementById('checklistCount').textContent = count + ' / ' + total + ' completed';
+  document.getElementById('sidebarProgress').style.width = pct + '%';
+  document.getElementById('sidebarCount').textContent = count + ' / ' + total + ' completed';
+}
+
+// ── Copy terminal blocks ──
+function copyBlock(btn) {
+  const pre = btn.closest('.terminal').querySelector('pre');
+  const text = pre.innerText.replace(/^\$ /gm, '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+  });
+}
+
+// ── Platform tabs ──
+function switchTab(e, id) {
+  const parent = e.target.closest('.step-body');
+  parent.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
+  parent.querySelectorAll('.platform-panel').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+// ── Scroll spy ──
+function updateScrollSpy() {
+  const sections = document.querySelectorAll('.step');
+  const links = document.querySelectorAll('.sidebar-nav a');
+  let current = '';
+  sections.forEach(s => {
+    const top = s.getBoundingClientRect().top;
+    if (top < 160) current = s.id;
+  });
+  links.forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+  });
+}
+window.addEventListener('scroll', updateScrollSpy, { passive: true });
+
+// ── Mobile sidebar ──
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.querySelector('.sidebar-overlay').classList.toggle('open');
+}
+// Close sidebar when clicking a nav link on mobile
+document.querySelectorAll('.sidebar-nav a').forEach(a => {
+  a.addEventListener('click', () => {
+    if (window.innerWidth <= 900) toggleSidebar();
+  });
+});
+
+// ── Init ──
+renderChecklist();
+updateScrollSpy();
+</script>
+</body>
+</html>

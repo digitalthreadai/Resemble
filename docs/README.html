@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resemble — AI-Powered Face Comparison</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A0A0F; --surface: #12121A; --surface-hover: #1E1E2E;
+  --terminal-bg: #1A1A2E; --terminal-border: #2A2A3E;
+  --text: #E8E8ED; --muted: #8888A0; --muted-fg: #6E6E88;
+  --primary: #7c3aed; --primary-light: #c4b5fd; --secondary: #a855f7;
+  --green: #4ADE80; --blue: #60A5FA; --purple: #A78BFA; --red: #F87171;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+code, pre, .mono { font-family: 'JetBrains Mono', monospace; }
+
+a { color: var(--primary-light); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--secondary); }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* ── Hero ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 80px 24px 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 100px;
+  border: 1px solid var(--terminal-border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 32px;
+}
+
+.hero-badge span { color: var(--green); }
+
+.hero h1 {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, var(--secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 24px;
+}
+
+.hero-tagline {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  color: var(--muted);
+  max-width: 640px;
+  margin-bottom: 40px;
+  line-height: 1.7;
+}
+
+.hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-bottom: 56px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 0 24px rgba(124, 58, 237, 0.3);
+}
+.btn-primary:hover {
+  background: var(--secondary);
+  box-shadow: 0 0 32px rgba(168, 85, 247, 0.4);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--terminal-border);
+}
+.btn-secondary:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  color: var(--text);
+}
+
+/* ── Terminal ── */
+.terminal {
+  width: 100%;
+  max-width: 580px;
+  background: var(--terminal-bg);
+  border: 1px solid var(--terminal-border);
+  border-radius: 12px;
+  overflow: hidden;
+  text-align: left;
+  position: relative;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid var(--terminal-border);
+}
+
+.terminal-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+}
+.terminal-dot.r { background: var(--red); }
+.terminal-dot.y { background: #FBBF24; }
+.terminal-dot.g { background: var(--green); }
+
+.terminal-title {
+  flex: 1;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted-fg);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.terminal-copy {
+  background: none;
+  border: 1px solid var(--terminal-border);
+  color: var(--muted);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+}
+.terminal-copy:hover { border-color: var(--primary); color: var(--text); }
+
+.terminal-body {
+  padding: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.8;
+  color: var(--muted);
+}
+
+.terminal-body .prompt { color: var(--green); }
+.terminal-body .cmd { color: var(--text); }
+.terminal-body .flag { color: var(--purple); }
+
+/* ── Section ── */
+.section {
+  padding: 100px 24px;
+  position: relative;
+}
+
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--primary-light);
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+
+.section-desc {
+  color: var(--muted);
+  font-size: 1.05rem;
+  max-width: 640px;
+  margin-bottom: 48px;
+}
+
+/* ── Card Grid ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--terminal-border);
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+.card:hover {
+  background: var(--surface-hover);
+  border-color: rgba(124, 58, 237, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+}
+
+.card-icon {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.card p { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+
+.card-tag {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: rgba(124, 58, 237, 0.15);
+  color: var(--primary-light);
+}
+
+/* ── Feature Groups ── */
+.feature-group { margin-bottom: 48px; }
+
+.feature-group-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted-fg);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--terminal-border);
+}
+
+/* ── Tables ── */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--surface);
+  border: 1px solid var(--terminal-border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.data-table th {
+  background: rgba(0,0,0,0.3);
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--terminal-border);
+}
+
+.data-table td {
+  padding: 14px 20px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(42, 42, 62, 0.5);
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+
+.data-table .mono { font-size: 0.85rem; color: var(--green); }
+
+.weight-bar {
+  display: inline-block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--primary);
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+/* ── File Tree ── */
+.file-tree-toggle {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--terminal-border);
+  border-radius: 12px;
+  padding: 16px 24px;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s;
+}
+.file-tree-toggle:hover { background: var(--surface-hover); border-color: var(--primary); }
+
+.file-tree-toggle .arrow {
+  transition: transform 0.3s;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.file-tree-toggle.open .arrow { transform: rotate(180deg); }
+
+.file-tree-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+  background: var(--surface);
+  border: 1px solid var(--terminal-border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  margin-top: -12px;
+}
+
+.file-tree-content.open { max-height: 2000px; }
+
+.file-tree-content pre {
+  padding: 24px;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--muted);
+  overflow-x: auto;
+}
+
+.file-tree-content .dir { color: var(--blue); font-weight: 500; }
+.file-tree-content .file { color: var(--text); }
+.file-tree-content .comment { color: var(--muted-fg); }
+
+/* ── How It Works (two-column) ── */
+.how-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .how-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Footer ── */
+.footer {
+  border-top: 1px solid var(--terminal-border);
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.footer-links {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.footer-links a {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--primary-light); }
+
+.footer-copy {
+  color: var(--muted-fg);
+  font-size: 0.8rem;
+}
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--terminal-border), transparent);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .hero { padding: 60px 16px 40px; }
+  .section { padding: 64px 16px; }
+  .card-grid { grid-template-columns: 1fr; }
+  .terminal { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════ HERO ════════════════════ -->
+<section class="hero">
+  <div class="hero-badge">
+    <span>&#9679;</span> Expo SDK 55 &middot; React Native &middot; TypeScript
+  </div>
+  <h1>Resemble</h1>
+  <p class="hero-tagline">AI-powered face comparison &mdash; discover family resemblance and find your celebrity match</p>
+  <div class="hero-buttons">
+    <a href="SITECONFIGURATIONS.html" class="btn btn-primary">&#9889; Get Started</a>
+    <a href="COO.html" class="btn btn-secondary">&#9670; View Strategy</a>
+  </div>
+  <div class="terminal">
+    <div class="terminal-header">
+      <span class="terminal-dot r"></span>
+      <span class="terminal-dot y"></span>
+      <span class="terminal-dot g"></span>
+      <span class="terminal-title">Quick Start</span>
+      <button class="terminal-copy" onclick="copyTerminal()" id="copyBtn">Copy</button>
+    </div>
+    <div class="terminal-body" id="terminalCode">
+      <div><span class="prompt">$</span> <span class="cmd">git clone</span> <span class="flag">https://github.com/digitalthreadai/Resemble.git</span></div>
+      <div><span class="prompt">$</span> <span class="cmd">cd Resemble</span> <span class="flag">&&</span> <span class="cmd">npm install</span></div>
+      <div><span class="prompt">$</span> <span class="cmd">npm run web</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ STACK ════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">&#9670; Stack</div>
+    <h2 class="section-title">Built on Modern Technology</h2>
+    <p class="section-desc">A cross-platform native app powered by the best tools in the React Native ecosystem, with AI-driven face detection on every platform.</p>
+    <div class="card-grid">
+      <div class="card">
+        <span class="card-icon">&#9883;</span>
+        <h3>Expo SDK 55</h3>
+        <p>Managed workflow with native module support, OTA updates, and streamlined builds via EAS.</p>
+        <span class="card-tag">Framework</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">&#9901;</span>
+        <h3>React Native 0.83.2</h3>
+        <p>Cross-platform native UI for iOS, Android, and Web from a single TypeScript codebase.</p>
+        <span class="card-tag">Runtime</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">&#9674;</span>
+        <h3>TypeScript 5.9</h3>
+        <p>End-to-end type safety across components, engine logic, and API interfaces.</p>
+        <span class="card-tag">Language</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">&#8644;</span>
+        <h3>Expo Router</h3>
+        <p>File-based routing with deep linking, shared layouts, and type-safe navigation.</p>
+        <span class="card-tag">Navigation</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">&#9787;</span>
+        <h3>face-api.js</h3>
+        <p>Browser-based face detection with SSD MobileNet, 68-point landmarks, and face recognition models.</p>
+        <span class="card-tag">Web AI</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">&#9883;</span>
+        <h3>Google ML Kit</h3>
+        <p>Native on-device face detection for iOS and Android with real-time 30fps frame processing.</p>
+        <span class="card-tag">Native AI</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">&#9041;</span>
+        <h3>MobileFaceNet TFLite</h3>
+        <p>Lightweight face embedding model for accurate similarity scoring on mobile devices.</p>
+        <span class="card-tag">Model</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">&#8634;</span>
+        <h3>Reanimated + SVG</h3>
+        <p>60fps animations with react-native-reanimated and SVG-based gauges and charts.</p>
+        <span class="card-tag">Animation</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">&#9881;</span>
+        <h3>AsyncStorage</h3>
+        <p>Persistent local storage for scan history, preferences, and cached results.</p>
+        <span class="card-tag">Storage</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">&#9889;</span>
+        <h3>Groq API</h3>
+        <p>Ultra-fast LLM inference for generating personality-rich comparison narratives.</p>
+        <span class="card-tag">AI</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">&#9881;</span>
+        <h3>EAS Build</h3>
+        <p>Cloud-based native builds for iOS and Android with managed signing and distribution.</p>
+        <span class="card-tag">CI/CD</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ FEATURES ════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">&#9733; Features</div>
+    <h2 class="section-title">Everything You Need</h2>
+    <p class="section-desc">From real-time camera scanning to animated score reveals, Resemble delivers a polished, delightful experience on every platform.</p>
+
+    <div class="feature-group">
+      <div class="feature-group-title">Core</div>
+      <div class="card-grid">
+        <div class="card">
+          <span class="card-icon">&#128106;</span>
+          <h3>Family Resemblance</h3>
+          <p>Compare a child against both parents with blended similarity scoring across five facial regions.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">&#11088;</span>
+          <h3>Celebrity Match</h3>
+          <p>Find your celebrity lookalike with ranked results and shareable comparison cards.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">&#128247;</span>
+          <h3>FaceID Camera</h3>
+          <p>Real-time camera scanner with oval face guide, quality assessment, and auto-capture.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">&#128196;</span>
+          <h3>Scan History</h3>
+          <p>Persistent history of all comparisons with quick replay and result sharing.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">&#128257;</span>
+          <h3>Share Results</h3>
+          <p>Export comparison cards as images for social media sharing with branded layouts.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-group">
+      <div class="feature-group-title">Engine</div>
+      <div class="card-grid">
+        <div class="card">
+          <span class="card-icon">&#9878;</span>
+          <h3>Hybrid Scoring (70/30)</h3>
+          <p>70% geometric landmark similarity + 30% neural embedding distance for robust results.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">&#127760;</span>
+          <h3>Cross-Platform Detection</h3>
+          <p>face-api.js on web, Google ML Kit on native &mdash; same scoring pipeline, consistent results.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">&#128200;</span>
+          <h3>Photo Quality Assessment</h3>
+          <p>Evaluates lighting, angle, resolution, and face visibility before scoring for reliable results.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-group">
+      <div class="feature-group-title">User Experience</div>
+      <div class="card-grid">
+        <div class="card">
+          <span class="card-icon">&#128218;</span>
+          <h3>4-Step Onboarding</h3>
+          <p>Guided walkthrough with animated illustrations explaining modes and permissions.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">&#127881;</span>
+          <h3>Confetti Celebration</h3>
+          <p>Particle confetti animation on high-similarity results for a delightful reveal moment.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">&#127922;</span>
+          <h3>Animated Score Reveal</h3>
+          <p>Smooth gauge animation with staggered feature breakdowns for dramatic result presentation.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ HOW IT WORKS ════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">&#9881; How It Works</div>
+    <h2 class="section-title">The Scoring Pipeline</h2>
+    <p class="section-desc">Five facial regions are independently scored and weighted to produce a final similarity percentage.</p>
+
+    <div class="how-grid">
+      <div>
+        <h3 style="font-size:1rem; margin-bottom:16px; color:var(--primary-light);">Feature Weights</h3>
+        <table class="data-table">
+          <thead>
+            <tr><th>Region</th><th>Weight</th><th>Visual</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>&#128065; Eyes</td>
+              <td class="mono">25%</td>
+              <td><span class="weight-bar" style="width:100px;"></span></td>
+            </tr>
+            <tr>
+              <td>&#128067; Nose</td>
+              <td class="mono">25%</td>
+              <td><span class="weight-bar" style="width:100px;"></span></td>
+            </tr>
+            <tr>
+              <td>&#128068; Mouth</td>
+              <td class="mono">20%</td>
+              <td><span class="weight-bar" style="width:80px;"></span></td>
+            </tr>
+            <tr>
+              <td>&#9901; Jawline</td>
+              <td class="mono">15%</td>
+              <td><span class="weight-bar" style="width:60px;"></span></td>
+            </tr>
+            <tr>
+              <td>&#10548; Eyebrows</td>
+              <td class="mono">15%</td>
+              <td><span class="weight-bar" style="width:60px;"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3 style="font-size:1rem; margin-bottom:16px; color:var(--primary-light);">Platform Detection</h3>
+        <table class="data-table">
+          <thead>
+            <tr><th>Capability</th><th>Web</th><th>Native</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Face Detection</td>
+              <td class="mono">face-api.js SSD</td>
+              <td class="mono">ML Kit</td>
+            </tr>
+            <tr>
+              <td>Landmarks</td>
+              <td class="mono">68-point model</td>
+              <td class="mono">ML Kit contours</td>
+            </tr>
+            <tr>
+              <td>Embeddings</td>
+              <td class="mono">face-api.js</td>
+              <td class="mono">MobileFaceNet</td>
+            </tr>
+            <tr>
+              <td>Camera</td>
+              <td class="mono">getUserMedia</td>
+              <td class="mono">Vision Camera</td>
+            </tr>
+            <tr>
+              <td>FPS</td>
+              <td class="mono">~15 fps</td>
+              <td class="mono">~30 fps</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ PROJECT STRUCTURE ════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">&#128193; Structure</div>
+    <h2 class="section-title">Project Layout</h2>
+    <p class="section-desc">Expo Router file-based routing with a clean separation between screens, engine logic, and reusable components.</p>
+
+    <button class="file-tree-toggle" id="treeToggle" onclick="toggleTree()">
+      <span>&#128193; resemble/</span>
+      <span class="arrow">&#9660;</span>
+    </button>
+    <div class="file-tree-content" id="treeContent">
+      <pre>
+<span class="dir">app/</span>                        <span class="comment">-- Expo Router screens</span>
+  <span class="file">_layout.tsx</span>              <span class="comment">-- Root layout (dark theme, Stack nav)</span>
+  <span class="file">index.tsx</span>                <span class="comment">-- Landing page (hero + feature cards)</span>
+  <span class="file">family.tsx</span>               <span class="comment">-- Family comparison (3 upload slots)</span>
+  <span class="file">celebrity.tsx</span>            <span class="comment">-- Celebrity match (2 upload slots)</span>
+  <span class="file">camera.tsx</span>               <span class="comment">-- FaceID-style camera scanner</span>
+
+<span class="dir">src/</span>
+  <span class="dir">engine/</span>                  <span class="comment">-- Face analysis (pure TypeScript)</span>
+    <span class="file">constants.ts</span>           <span class="comment">-- FEATURES, FEATURE_WEIGHTS</span>
+    <span class="file">landmarks.ts</span>           <span class="comment">-- normaliseLandmarks, featureSim, scores</span>
+    <span class="file">accuracy.ts</span>            <span class="comment">-- computeAccuracy, assessCameraQuality</span>
+    <span class="file">index.ts</span>               <span class="comment">-- barrel export</span>
+
+  <span class="dir">components/</span>
+    <span class="file">Button.tsx</span>             <span class="comment">-- primary / secondary / ghost variants</span>
+    <span class="file">UploadCard.tsx</span>         <span class="comment">-- Photo upload + preview + quality badge</span>
+    <span class="file">GaugeChart.tsx</span>         <span class="comment">-- Animated SVG circular gauge</span>
+    <span class="file">FeatureBar.tsx</span>         <span class="comment">-- Animated horizontal bars + breakdown</span>
+    <span class="file">FaceOvalGuide.tsx</span>      <span class="comment">-- SVG oval overlay (FaceID-style)</span>
+
+  <span class="dir">hooks/</span>
+    <span class="file">useImagePicker.ts</span>      <span class="comment">-- Generic picker with slot management</span>
+
+  <span class="dir">theme/</span>
+    <span class="file">colors.ts</span>              <span class="comment">-- Dark glassmorphism palette</span>
+    <span class="file">spacing.ts</span>             <span class="comment">-- Spacing, radius, breakpoints</span>
+
+<span class="file">app.json</span>                    <span class="comment">-- Expo config</span>
+<span class="file">eas.json</span>                    <span class="comment">-- EAS Build profiles</span>
+<span class="file">tsconfig.json</span>               <span class="comment">-- TypeScript config</span>
+<span class="file">package.json</span>                <span class="comment">-- Dependencies + scripts</span>
+</pre>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ FOOTER ════════════════════ -->
+<footer class="footer">
+  <div class="footer-links">
+    <a href="COO.html">&#9670; Strategy &amp; Vision</a>
+    <a href="SITECONFIGURATIONS.html">&#9881; Setup Guide</a>
+    <a href="https://github.com/digitalthreadai/Resemble" target="_blank" rel="noopener">&#9741; GitHub</a>
+  </div>
+  <p class="footer-copy">Resemble &mdash; Digital Thread AI</p>
+</footer>
+
+<script>
+function copyTerminal() {
+  const lines = document.querySelectorAll('#terminalCode div');
+  const text = Array.from(lines).map(l => l.textContent.trim()).join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'var(--green)';
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 2000);
+  });
+}
+
+function toggleTree() {
+  const toggle = document.getElementById('treeToggle');
+  const content = document.getElementById('treeContent');
+  toggle.classList.toggle('open');
+  content.classList.toggle('open');
+}
+</script>
+
+</body>
+</html>
